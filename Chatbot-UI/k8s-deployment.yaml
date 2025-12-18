@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatbot-deployment
+spec:
+  replicas: 2  # Run 2 copies for high availability
+  selector:
+    matchLabels:
+      app: chatbot
+  template:
+    metadata:
+      labels:
+        app: chatbot
+    spec:
+      containers:
+      - name: chatbot
+        image: awasthi25/chatbot:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-secret
+              key: api-key
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatbot-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: chatbot
+  ports:
+    - protocol: TCP
+      port: 80         # Public port (Clean URL)
+      targetPort: 3000 # Container port
